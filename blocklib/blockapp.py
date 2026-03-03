@@ -30,8 +30,8 @@ class BlockApp(TinyApp):
             stat = os.stat(self.blockmappath)
             if self.blockmap and stat.st_mtime == self.blockmaptime:
                 return self.blockmap
-            self.loginfo(None, 'Reloading map')
             newblockmap = parse_blockmap(self.blockmappath)
+            self.loginfo(None, f'Read map: {len(newblockmap.files)} files, {len(newblockmap.dirs)} dirs, {len(newblockmap.trees)} trees')
             self.blockmaptime = stat.st_mtime
             self.blockmap = newblockmap
             return self.blockmap
