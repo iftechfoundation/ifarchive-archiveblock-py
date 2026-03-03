@@ -1,0 +1,39 @@
+class BlockMap:
+    def __init__(self, mapfiles, mapdirs, maptrees):
+        self.files = mapfiles
+        self.dirs = mapdirs
+        self.trees = maptrees
+        
+def parse_blockmap(pathname):
+    mapdirs = {}
+    maptrees = {}
+    mapfiles = {}
+    
+    with open(pathname) as fl:
+        for ln in fl.readlines():
+            ln = ln.strip()
+            if not ln:
+                continue
+            if ln.startswith('#'):
+                continue
+            key, _, tags = ln.partition('\t')
+            if not key or not tags:
+                raise Exception(f'line is not a def: {ln}')
+
+            key = key.strip()
+            tags = tags.strip()
+            if ':' not in tags:
+                raise Exception(f'block line lacks colon: {tags}')
+
+            if key.endswith('/'):
+                raise Exception(f'block line ends with slash: {key}')
+            elif key.endswith('/*'):
+                key = key[ : -2 ]
+                mapdirs[key] = tags
+            elif key.endswith('/**'):
+                key = key[ : -3 ]
+                maptrees[key] = tags
+            else:
+                mapfiles[key] = tags
+                
+    return BlockMap(mapfiles, mapdirs, maptrees)
