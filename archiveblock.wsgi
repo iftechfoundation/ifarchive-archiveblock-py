@@ -21,6 +21,8 @@ class han_Home(ReqHandler):
             #    yield '  %s: %s\n' % (key, val,)
             return
 
+        blockmap = self.app.get_blockmap()
+
         pathname = '/opt/homebrew/var/www'+req.env['REDIRECT_URL']
         stat = os.stat(pathname)
         

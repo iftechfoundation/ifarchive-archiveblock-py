@@ -1,7 +1,10 @@
+import os
 import threading
 
 from tinyapp.app import TinyApp, TinyRequest
 from tinyapp.handler import ReqHandler
+
+from .map import parse_blockmap
 
 class BlockApp(TinyApp):
     """BlockApp: The TinyApp class.
@@ -15,3 +18,21 @@ class BlockApp(TinyApp):
         
         # Thread-local storage for various things which are not thread-safe.
         self.threadcache = threading.local()
+
+        # Thread lock for checking and reloading the blockmap.
+        self.maplock = threading.Lock()
+
+        self.blockmap = None
+        self.blockmaptime = 0
+
+    def get_blockmap(self):
+        with self.maplock:
+            stat = os.stat(self.blockmappath)
+            if self.blockmap and stat.st_mtime == self.blockmaptime:
+                return self.blockmap
+            self.loginfo(None, 'Reloading map')
+            newblockmap = parse_blockmap(self.blockmappath)
+            self.blockmaptime = stat.st_mtime
+            self.blockmap = newblockmap
+            return self.blockmap
+        
