@@ -6,6 +6,29 @@ class BlockMap:
         self.files = mapfiles
         self.dirs = mapdirs
         self.trees = maptrees
+
+    def get(self, uri):
+        tags = self.files.get(uri)
+        if tags:
+            return tags
+
+        backcount = 0
+        while True:
+            pos = uri.rfind('/')
+            if pos <= 1:
+                break
+            uri = uri[ : pos ]
+            if backcount == 0:
+                tags = self.dirs.get(uri)
+                if tags:
+                    return tags
+            tags = self.trees.get(uri)
+            if tags:
+                return tags
+            backcount += 1
+
+        return None
+            
         
 def parse_blockmap(pathname):
     mapdirs = {}

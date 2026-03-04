@@ -34,6 +34,8 @@ class han_Home(ReqHandler):
         except FileNotFoundError:
             raise HTTPError('404 Not Found', f'Unable to stat: {pathname}\n')
 
+        tags = blockmap.get(uri)
+
         mimetype = self.app.mimemap.get(pathname)
         
         fl = open(pathname, 'rb')
@@ -41,6 +43,7 @@ class han_Home(ReqHandler):
         
         headers = [
             ('Content-Length', str(stat.st_size)),
+            ('X-IFArchive-Safety', tags), ###
         ]
         if mimetype:
             headers.append( ('Content-Type', mimetype) )
