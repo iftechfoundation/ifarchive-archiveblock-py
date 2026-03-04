@@ -23,11 +23,16 @@ class han_Home(ReqHandler):
 
         blockmap = self.app.get_blockmap()
 
-        pathname = '/opt/homebrew/var/www'+req.env['REDIRECT_URL']
+        uri = req.env['REDIRECT_URL']
+        if not uri.startswith('/'):
+            raise HTTPError('404 Not Found', f'Does not start with slash: {pathname}\n')
+
+        pathname = self.app.basepath + uri
+        
         try:
             stat = os.stat(pathname)
         except FileNotFoundError:
-            raise HTTPError('404 Not Found', f'Unable to stat {pathname}\n')
+            raise HTTPError('404 Not Found', f'Unable to stat: {pathname}\n')
 
         mimetype = self.app.mimemap.get(pathname)
         

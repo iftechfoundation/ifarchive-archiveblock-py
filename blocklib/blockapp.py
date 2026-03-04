@@ -16,6 +16,7 @@ class BlockApp(TinyApp):
         self.blockmappath = config['ArchiveBlock']['MapPath']
         self.restrictdomain = config['ArchiveBlock']['RestrictDomain']
         self.mimepaths = config['ArchiveBlock']['MIMEPaths']
+        self.basepath = config['ArchiveBlock']['BasePath']
         
         # Thread-local storage for various things which are not thread-safe.
         self.threadcache = threading.local()
