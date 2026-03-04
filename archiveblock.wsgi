@@ -25,14 +25,18 @@ class han_Home(ReqHandler):
 
         pathname = '/opt/homebrew/var/www'+req.env['REDIRECT_URL']
         stat = os.stat(pathname)
+
+        mimetype = self.app.mimemap.get(pathname)
         
         fl = open(pathname, 'rb')
         wrapper = req.env['wsgi.file_wrapper'](fl)
         
         headers = [
-            ('Content-Type', BINARY),
             ('Content-Length', str(stat.st_size)),
         ]
+        if mimetype:
+            headers.append( ('Content-Type', mimetype) )
+            
         raise HTTPRawResponse('200 OK', headers, wrapper)
 
 # We only have one handler.

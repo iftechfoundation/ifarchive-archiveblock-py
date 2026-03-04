@@ -1,4 +1,5 @@
 import re
+import os, os.path
 
 class BlockMap:
     def __init__(self, mapfiles, mapdirs, maptrees):
@@ -45,6 +46,10 @@ class MIMEMap:
     def __init__(self, map):
         self.map = map
 
+    def get(self, path, default=None):
+        dir, suffix = os.path.splitext(path)
+        return self.map.get(suffix, default)
+
 def parse_mimemaps(pathnames):
     pat = re.compile(r'^AddType\s+([^ ]+/[^ ]+)\s+(.*)')
     map = {}
@@ -58,8 +63,8 @@ def parse_mimemaps(pathnames):
                     typeval = match.group(1)
                     suffixes = match.group(2)
                     for suffix in suffixes.split():
-                        if suffix.startswith('.'):
-                            suffix = suffix[ 1 : ]
+                        if not suffix.startswith('.'):
+                            suffix = '.' + suffix
                         if suffix not in map:
                             map[suffix] = typeval
 

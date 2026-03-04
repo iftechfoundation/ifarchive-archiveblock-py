@@ -28,6 +28,7 @@ class BlockApp(TinyApp):
 
         pathls = [ val.strip() for val in self.mimepaths.split(',') ]
         self.mimemap = parse_mimemaps(pathls)
+        self.loginfo(None, f'Read MIME: {len(self.mimemap.map)} suffixes')
 
     def get_blockmap(self):
         with self.maplock:
