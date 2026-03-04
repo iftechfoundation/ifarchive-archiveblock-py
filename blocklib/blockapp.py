@@ -4,7 +4,7 @@ import threading
 from tinyapp.app import TinyApp, TinyRequest
 from tinyapp.handler import ReqHandler
 
-from .map import parse_blockmap
+from .map import parse_blockmap, parse_mimemaps
 
 class BlockApp(TinyApp):
     """BlockApp: The TinyApp class.
@@ -13,8 +13,9 @@ class BlockApp(TinyApp):
     def __init__(self, config, hanclasses):
         TinyApp.__init__(self, hanclasses)
 
-        self.blockmappath = config['ArchiveBlock']['ArchiveBlockMapPath']
-        self.restrictdomain = config['ArchiveBlock']['ArchiveBlockRestrictDomain']
+        self.blockmappath = config['ArchiveBlock']['MapPath']
+        self.restrictdomain = config['ArchiveBlock']['RestrictDomain']
+        self.mimepaths = config['ArchiveBlock']['MIMEPaths']
         
         # Thread-local storage for various things which are not thread-safe.
         self.threadcache = threading.local()
@@ -24,6 +25,9 @@ class BlockApp(TinyApp):
 
         self.blockmap = None
         self.blockmaptime = 0
+
+        pathls = [ val.strip() for val in self.mimepaths.split(',') ]
+        self.mimemap = parse_mimemaps(pathls)
 
     def get_blockmap(self):
         with self.maplock:

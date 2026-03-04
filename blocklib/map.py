@@ -1,3 +1,5 @@
+import re
+
 class BlockMap:
     def __init__(self, mapfiles, mapdirs, maptrees):
         self.files = mapfiles
@@ -37,3 +39,30 @@ def parse_blockmap(pathname):
                 mapfiles[key] = tags
                 
     return BlockMap(mapfiles, mapdirs, maptrees)
+
+
+class MIMEMap:
+    def __init__(self, map):
+        self.map = map
+
+def parse_mimemaps(pathnames):
+    pat = re.compile(r'^AddType\s+([^ ]+/[^ ]+)\s+(.*)')
+    map = {}
+    
+    for pathname in pathnames:
+        with open(pathname) as fl:
+            for ln in fl.readlines():
+                ln = ln.strip()
+                match = pat.match(ln)
+                if match:
+                    typeval = match.group(1)
+                    suffixes = match.group(2)
+                    for suffix in suffixes.split():
+                        if suffix.startswith('.'):
+                            suffix = suffix[ 1 : ]
+                        if suffix not in map:
+                            map[suffix] = typeval
+
+    return MIMEMap(map)
+                
+    
