@@ -8,7 +8,7 @@ import threading
 
 from tinyapp.handler import ReqHandler
 from tinyapp.constants import PLAINTEXT, HTML, BINARY
-from tinyapp.excepts import HTTPRawResponse
+from tinyapp.excepts import HTTPRawResponse, HTTPError
 from blocklib.blockapp import BlockApp
 
 class han_Home(ReqHandler):
@@ -24,7 +24,10 @@ class han_Home(ReqHandler):
         blockmap = self.app.get_blockmap()
 
         pathname = '/opt/homebrew/var/www'+req.env['REDIRECT_URL']
-        stat = os.stat(pathname)
+        try:
+            stat = os.stat(pathname)
+        except FileNotFoundError:
+            raise HTTPError('404 Not Found', f'Unable to stat {pathname}\n')
 
         mimetype = self.app.mimemap.get(pathname)
         
