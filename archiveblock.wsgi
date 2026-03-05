@@ -14,11 +14,11 @@ from blocklib.blockapp import BlockApp
 
 class han_Home(ReqHandler):
     def do_get(self, req):
-        uri = req.env['REDIRECT_URL']
-        if not uri.startswith('/'):
+        rediruri = req.env['REDIRECT_URL']
+        if not rediruri.startswith('/'):
             raise HTTPError('404 Not Found', f'Does not start with slash: {pathname}\n')
 
-        pathname = self.app.basepath + uri
+        pathname = self.app.basepath + rediruri
         
         try:
             fstat = os.stat(pathname)
@@ -36,7 +36,7 @@ class han_Home(ReqHandler):
             linkheader = "<https://%s%s>; rel=\"canonical\"" % (self.app.rootdomain, req.env['REQUEST_URI'],)
         
         blockmap = self.app.get_blockmap()
-        tags, redirect = blockmap.get_pair(uri)
+        tags, redirect = blockmap.get_pair(rediruri)
 
         if tags:
             safetyheader = tags
