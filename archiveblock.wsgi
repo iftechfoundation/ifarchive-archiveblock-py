@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 import sys
-import os
+import os, os.path
+import stat
 import configparser
 import logging, logging.handlers
 import threading
@@ -13,16 +14,6 @@ from blocklib.blockapp import BlockApp
 
 class han_Home(ReqHandler):
     def do_get(self, req):
-        if False:
-            req.set_content_type('text/plain; charset=utf-8')
-            yield 'REQUEST_URI: ' + req.env['REQUEST_URI'] + '\n'
-            yield 'REDIRECT_URL: ' + req.env['REDIRECT_URL'] + '\n'
-            #for key, val in sorted(req.env.items()):
-            #    yield '  %s: %s\n' % (key, val,)
-            return
-
-        blockmap = self.app.get_blockmap()
-
         uri = req.env['REDIRECT_URL']
         if not uri.startswith('/'):
             raise HTTPError('404 Not Found', f'Does not start with slash: {pathname}\n')
@@ -30,23 +21,67 @@ class han_Home(ReqHandler):
         pathname = self.app.basepath + uri
         
         try:
-            stat = os.stat(pathname)
+            fstat = os.stat(pathname)
         except FileNotFoundError:
             raise HTTPError('404 Not Found', f'Unable to stat: {pathname}\n')
 
-        tags = blockmap.get(uri)
+        if stat.S_ISDIR(fstat.st_mode):
+            raise HTTPError('421 Misdirected Request', f'Plugin cannot handle directory: {pathname}\n')
 
+        filesize = fstat.st_size
+        linkheader = None
+        safetyheader = None
+        
+        if req.env['SERVER_NAME'] != self.app.rootdomain:
+            linkheader = "<https://%s%s>; rel=\"canonical\"" % (self.app.rootdomain, req.env['REQUEST_URI'],)
+        
+        blockmap = self.app.get_blockmap()
+        tags, redirect = blockmap.get_pair(uri)
+
+        if tags:
+            safetyheader = tags
+            
+        if redirect:
+            if req.env['SERVER_NAME'] != self.app.restrictdomain:
+                # Construct a 302-redirect response to the ukrestrict
+                # domain.
+                # (Testing indicates we don't need to percent-encode the
+                # URI.)
+                newurl = "https://%s%s" % (self.app.restrictdomain, req.env['REQUEST_URI'],)
+                req.set_status('302 Found')
+                req.set_content_type(PLAINTEXT)
+                req.add_header('Location', newurl),
+                req.add_header('Access-Control-Allow-Origin', '*')
+                if linkheader:
+                    req.add_header('Link', linkheader)
+                if safetyheader:
+                    req.add_header('X-IFArchive-Safety', safetyheader)
+                yield f'File tagged: {tags}\n'
+                yield f'Redirecting to: {newurl}\n'
+                return
+
+            # The request came to the ukrestrict domain. Let it proceed
+            # with the magic header. (UK geoblocking will happen at the
+            # Cloudflare level.)
+            
+        # At this point we know we are going to return the file contents.
+        # We may have tags, but they are not ones that are restricted in
+        # the UK. (In this case we'll add the X-IFArchive-Safety header.)
+        
         mimetype = self.app.mimemap.get(pathname)
         
         fl = open(pathname, 'rb')
         wrapper = req.env['wsgi.file_wrapper'](fl)
         
         headers = [
-            ('Content-Length', str(stat.st_size)),
-            ('X-IFArchive-Safety', tags), ###
+            ('Content-Length', str(filesize)),
         ]
         if mimetype:
             headers.append( ('Content-Type', mimetype) )
+        if linkheader:
+            headers.append( ('Link', linkheader) )
+        if safetyheader:
+            headers.append( ('X-IFArchive-Safety', safetyheader) )
             
         raise HTTPRawResponse('200 OK', headers, wrapper)
 

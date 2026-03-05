@@ -14,6 +14,7 @@ class BlockApp(TinyApp):
         TinyApp.__init__(self, hanclasses)
 
         self.blockmappath = config['ArchiveBlock']['MapPath']
+        self.rootdomain = config['ArchiveBlock']['RootDomain']
         self.restrictdomain = config['ArchiveBlock']['RestrictDomain']
         self.mimepaths = config['ArchiveBlock']['MIMEPaths']
         self.basepath = config['ArchiveBlock']['BasePath']

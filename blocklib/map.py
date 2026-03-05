@@ -28,7 +28,13 @@ class BlockMap:
             backcount += 1
 
         return None
-            
+
+    def get_pair(self, uri):
+        val = self.get(uri)
+        if val is None:
+            return None, False
+        flags, _, tags = val.partition(':')
+        return tags, ('u' in flags)
         
 def parse_blockmap(pathname):
     mapdirs = {}
