@@ -15,6 +15,10 @@ from blocklib.blockapp import BlockApp
 
 class han_Home(ReqHandler):
     def do_get(self, req):
+        if 'REDIRECT_URL' not in req.env:
+            yield '<html><body>This is the redirect script.</body></html>\n'
+            return
+            
         rediruri = req.env['REDIRECT_URL']
         if not rediruri.startswith('/'):
             raise HTTPError('404 Not Found', f'Does not start with slash: {pathname}\n')
