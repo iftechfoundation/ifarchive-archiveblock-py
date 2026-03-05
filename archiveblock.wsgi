@@ -26,6 +26,7 @@ class han_Home(ReqHandler):
         pathname = self.app.basepath + rediruri
 
         uri = urllib.parse.unquote(req.env['REQUEST_URI'])
+        req.loginfo(f'Hit: {uri}')
         
         try:
             fstat = os.stat(pathname)
@@ -82,6 +83,7 @@ class han_Home(ReqHandler):
         
         headers = [
             ('Content-Length', str(filesize)),
+            ('Access-Control-Allow-Origin', '*'),
         ]
         if mimetype:
             headers.append( ('Content-Type', mimetype) )
