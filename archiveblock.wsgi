@@ -4,6 +4,7 @@ import sys
 import os, os.path
 import stat
 import configparser
+import urllib.parse
 import logging, logging.handlers
 import threading
 
@@ -19,6 +20,8 @@ class han_Home(ReqHandler):
             raise HTTPError('404 Not Found', f'Does not start with slash: {pathname}\n')
 
         pathname = self.app.basepath + rediruri
+
+        uri = urllib.parse.unquote(req.env['REQUEST_URI'])
         
         try:
             fstat = os.stat(pathname)
@@ -33,7 +36,7 @@ class han_Home(ReqHandler):
         safetyheader = None
         
         if req.env['SERVER_NAME'] != self.app.rootdomain:
-            linkheader = "<https://%s%s>; rel=\"canonical\"" % (self.app.rootdomain, req.env['REQUEST_URI'],)
+            linkheader = "<https://%s%s>; rel=\"canonical\"" % (self.app.rootdomain, uri,)
         
         blockmap = self.app.get_blockmap()
         tags, redirect = blockmap.get_pair(rediruri)
@@ -47,7 +50,7 @@ class han_Home(ReqHandler):
                 # domain.
                 # (Testing indicates we don't need to percent-encode the
                 # URI.)
-                newurl = "https://%s%s" % (self.app.restrictdomain, req.env['REQUEST_URI'],)
+                newurl = "https://%s%s" % (self.app.restrictdomain, uri,)
                 req.set_status('302 Found')
                 req.set_content_type(PLAINTEXT)
                 req.add_header('Location', newurl),
