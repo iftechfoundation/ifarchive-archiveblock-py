@@ -42,7 +42,7 @@ class han_Home(ReqHandler):
         safetyheader = None
         
         if servername != self.app.rootdomain:
-            linkheader = "<https://%s%s>; rel=\"canonical\"" % (self.app.rootdomain, uri,)
+            linkheader = "<https://%s%s>; rel=\"canonical\"" % (self.app.rootdomain, urllib.parse.quote(uri),)
         
         blockmap = self.app.get_blockmap()
         tags, redirect = blockmap.get_pair(uri)
