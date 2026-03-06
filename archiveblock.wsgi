@@ -16,6 +16,7 @@ from blocklib.blockapp import BlockApp
 class han_Home(ReqHandler):
     def do_get(self, req):
         if 'REDIRECT_URL' not in req.env:
+            req.loginfo(f'GET without redirect')
             yield '<html><body>This is the archiveblock script.</body></html>\n'
             return
             
@@ -24,9 +25,11 @@ class han_Home(ReqHandler):
             raise HTTPError('404 Not Found', f'Does not start with slash: {pathname}\n')
 
         pathname = self.app.basepath + rediruri
+        servername = req.env['SERVER_NAME']
 
         uri = urllib.parse.unquote(req.env['REQUEST_URI'])
-        req.loginfo(f'Hit: {uri}')
+        
+        req.loginfo(f'GET {servername} {uri}')
         
         try:
             fstat = os.stat(pathname)
@@ -40,7 +43,7 @@ class han_Home(ReqHandler):
         linkheader = None
         safetyheader = None
         
-        if req.env['SERVER_NAME'] != self.app.rootdomain:
+        if servername != self.app.rootdomain:
             linkheader = "<https://%s%s>; rel=\"canonical\"" % (self.app.rootdomain, uri,)
         
         blockmap = self.app.get_blockmap()
@@ -50,7 +53,7 @@ class han_Home(ReqHandler):
             safetyheader = tags
             
         if redirect:
-            if req.env['SERVER_NAME'] != self.app.restrictdomain:
+            if servername != self.app.restrictdomain:
                 # Construct a 302-redirect response to the ukrestrict
                 # domain.
                 # (Testing indicates we don't need to percent-encode the
@@ -133,7 +136,7 @@ def create_appinstance(environ):
         logfilepath = config['ArchiveBlock']['LogFile']
         loghandler = logging.handlers.WatchedFileHandler(logfilepath)
         logging.basicConfig(
-            format = '[%(levelname).1s %(asctime)s] %(message)s',
+            format = '[%(levelname).1s %(asctime)s] [%(process)s %(thread)d] %(message)s',
             datefmt = '%b-%d %H:%M:%S',
             level = logging.INFO,
             handlers = [ loghandler ],
