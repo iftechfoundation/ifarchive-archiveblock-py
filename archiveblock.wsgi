@@ -20,14 +20,12 @@ class han_Home(ReqHandler):
             yield '<html><body>This is the archiveblock script.</body></html>\n'
             return
             
-        rediruri = req.env['REDIRECT_URL']
-        if not rediruri.startswith('/'):
+        uri = urllib.parse.unquote(req.env['REQUEST_URI'])
+        if not uri.startswith('/'):
             raise HTTPError('404 Not Found', f'Does not start with slash: {pathname}\n')
 
-        pathname = self.app.basepath + rediruri
+        pathname = self.app.basepath + uri
         servername = req.env['SERVER_NAME']
-
-        uri = urllib.parse.unquote(req.env['REQUEST_URI'])
         
         req.loginfo(f'GET {servername} {uri}')
         
@@ -47,7 +45,7 @@ class han_Home(ReqHandler):
             linkheader = "<https://%s%s>; rel=\"canonical\"" % (self.app.rootdomain, uri,)
         
         blockmap = self.app.get_blockmap()
-        tags, redirect = blockmap.get_pair(rediruri)
+        tags, redirect = blockmap.get_pair(uri)
 
         if tags:
             safetyheader = tags
