@@ -30,7 +30,7 @@ class han_Home(ReqHandler):
         req.loginfo(f'GET {servername} {uri}')
         
         try:
-            fstat = os.stat(pathname)
+            fstat = os.stat(pathname.encode('utf-8'))
         except FileNotFoundError:
             raise HTTPError('404 Not Found', f'Unable to stat: {pathname}\n')
 
@@ -79,7 +79,7 @@ class han_Home(ReqHandler):
         
         mimetype = self.app.mimemap.get(pathname)
         
-        fl = open(pathname, 'rb')
+        fl = open(pathname.encode('utf-8'), 'rb')
         wrapper = req.env['wsgi.file_wrapper'](fl)
         
         headers = [
