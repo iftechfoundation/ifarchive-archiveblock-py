@@ -56,7 +56,7 @@ class han_Home(ReqHandler):
                 # domain.
                 # (Testing indicates we don't need to percent-encode the
                 # URI.)
-                newurl = "https://%s%s" % (self.app.restrictdomain, uri,)
+                newurl = "https://%s%s" % (self.app.restrictdomain, urllib.parse.quote(uri),)
                 req.set_status('302 Found')
                 req.set_content_type(PLAINTEXT)
                 req.add_header('Location', newurl),
