@@ -27,7 +27,7 @@ class han_Home(ReqHandler):
         pathname = self.app.basepath + uri
         servername = req.env['SERVER_NAME']
         
-        req.loginfo(f'GET {servername} {uri}')
+        #req.loginfo(f'GET {servername} {uri}')
         
         try:
             fstat = os.stat(pathname.encode('utf-8'))
