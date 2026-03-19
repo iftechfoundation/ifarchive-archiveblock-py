@@ -1,4 +1,4 @@
-# Apache plugin for restricting files
+# Service for restricting files
 
 This tool is part of a system for restricting certain [IF Archive][ifarch] files from being served in the UK. It sucks that we have to do this, but we do. See discussion of the [UK Online Safety Act][ukosa].
 
@@ -32,7 +32,7 @@ Why a Python WSGI app? The redirect step is a bit too messy to handle with stand
 
 ## The map file
 
-The map file syntax can charitably be described as "dank". It's meant to be parsed by relatively simple C code.
+The map file syntax can charitably be described as "dank". It's meant to be parsed by relatively simple code.
 
 Map lines have the form:
 
