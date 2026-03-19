@@ -33,6 +33,8 @@ class han_Home(ReqHandler):
             fstat = os.stat(pathname.encode('utf-8'))
         except FileNotFoundError:
             raise HTTPError('404 Not Found', f'Unable to stat: {pathname}\n')
+        except NotADirectoryError:
+            raise HTTPError('404 Not Found', f'Not a directory: {pathname}\n')
 
         if stat.S_ISDIR(fstat.st_mode):
             raise HTTPError('421 Misdirected Request', f'Plugin cannot handle directory: {pathname}\n')
