@@ -8,6 +8,8 @@ import urllib.parse
 import logging, logging.handlers
 import threading
 
+from datetime import datetime, timezone
+
 from tinyapp.handler import ReqHandler
 from tinyapp.constants import PLAINTEXT, HTML, BINARY
 from tinyapp.excepts import HTTPRawResponse, HTTPError
@@ -40,6 +42,7 @@ class han_Home(ReqHandler):
             raise HTTPError('421 Misdirected Request', f'Plugin cannot handle directory: {pathname}\n')
 
         filesize = fstat.st_size
+        modtime = fstat.st_mtime
         linkheader = None
         safetyheader = None
         
@@ -86,6 +89,7 @@ class han_Home(ReqHandler):
         
         headers = [
             ('Content-Length', str(filesize)),
+            ('Last-Modified', headerdate(modtime)),
             ('Access-Control-Allow-Origin', '*'),
         ]
         if mimetype:
@@ -96,6 +100,10 @@ class han_Home(ReqHandler):
             headers.append( ('X-IFArchive-Safety', safetyheader) )
             
         raise HTTPRawResponse('200 OK', headers, wrapper)
+
+def headerdate(timestamp):
+    return datetime.fromtimestamp(timestamp, timezone.utc).strftime('%a, %d %b %Y %H:%M:%S GMT')
+
 
 # We only have one handler.
 handlers = [
